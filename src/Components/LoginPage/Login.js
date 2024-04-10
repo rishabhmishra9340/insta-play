@@ -1,107 +1,27 @@
-import LOGO from "../../images/logo.png";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import style from "./Login.css";
-import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { Spin } from "antd";
 import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
-  const navigate = useNavigate("");
-
-  useEffect(() => {
-    localStorage.removeItem("token");
-  }, []);
+  const navigate = useNavigate();
 
   const [value, setValue] = useState({
     username: "",
     password: "",
   });
-  const initialValues = { username: "", password: "" };
-  const [formValues, setFormValues] = useState(initialValues);
-  const [formErrors, setFormErrors] = useState({});
-  const [isSubmit, setIsSubmit] = useState(false);
   const [userNameError, setuserNameError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [loader, setLoader] = useState(false);
 
-  const fetchingToken = async () => {
-    const token = await axios.get(
-      "https://api.themoviedb.org/3/authentication/token/new?api_key=461182fa2668493a72758c55a1789c35"
-    );
-    localStorage.setItem("token", token.data.request_token);
-  };
-
-  const onValueChangeHandeler = (e) => {
+  const onValueChangeHandler = (e) => {
     setValue({ ...value, [e.target.name]: e.target.value });
   };
 
-  const SubmitHandler = async () => {
-    setLoader(true);
-    setFormErrors(validate(formValues));
-    
-
-    const { username, password } = value;
-
-    if (
-      username.trim() === "" ||
-      username.length === 0 ||
-      username.length <= 4
-    )
-     {
-      setuserNameError(true);
-      setLoader(false);
-    } else if (
-     
-      
-      password.length < 10
-    ) {
-     
-      setPasswordError(true);
-      setLoader(false);
-    } else {
-      await fetchingToken();
-      const checkToken = localStorage.getItem("token");
-
-      const data = {
-        username: value.username,
-        password: value.password,
-        request_token: checkToken,
-      };
-
-      console.log(data);
-
-      const res = await axios.post(
-        "https://api.themoviedb.org/3/authentication/token/validate_with_login?api_key=461182fa2668493a72758c55a1789c35",
-        data
-      );
-      setLoader(false);
-      console.log(res.data);
-
-      setValue({
-        username: "",
-        password: "",
-      });
-      setTimeout(() => {
-        navigate("/main");
-      }, 1000);
-
-      toast("Login Success");
-    }
-  };
-
-
-  useEffect(() => {
-    console.log(formErrors);
-  }, [formErrors]);
-
-  var errors = {
-    username: "",
-    password: "",
-  };
   const validate = (values) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    let errors = {};
     if (!values.username) {
       errors.username = "Username is required!";
     }
@@ -115,13 +35,38 @@ const Login = () => {
     return errors;
   };
 
-  console.log(errors);
+  const SubmitHandler = () => {
+    setLoader(true);
+
+    const { username, password } = value;
+
+    if (
+      username.trim() === "" ||
+      username.length === 0 ||
+      username.length <= 4
+    ) {
+      setuserNameError(true);
+      setLoader(false);
+    } else if (password.length < 10) {
+      setPasswordError(true);
+      setLoader(false);
+    } else {
+      setLoader(false);
+      setValue({ username: "", password: "" });
+      setTimeout(() => {
+        navigate("/main");
+      }, 1000);
+
+      toast("Login Success");
+    }
+  };
 
   return (
     <div>
       <div className="contain">
         <div className="nav-insta">
-          <img src={LOGO}></img>
+          {/* Your logo component */}
+          <img src='logo192.png'></img>
         </div>
         <div id="body-1">
           <div className="formContainer">
@@ -134,9 +79,9 @@ const Login = () => {
               placeholder="Username"
               name="username"
               value={value.username}
-              onChange={onValueChangeHandeler}
+              onChange={onValueChangeHandler}
             />
-            {userNameError ? <p>{formErrors.username}</p> : ""}
+            {userNameError ? <p>Username is required!</p> : ""}
 
             <br />
             <input
@@ -145,16 +90,16 @@ const Login = () => {
               placeholder="Password"
               name="password"
               value={value.password}
-              onChange={onValueChangeHandeler}
+              onChange={onValueChangeHandler}
             />
             {passwordError ? (
-              <p className="errorMessage">{formErrors.password}</p>
+              <p>Password must be more than 10 characters</p>
             ) : (
               ""
             )}
 
             <br />
-            <button disabled={loader === true} onClick={SubmitHandler}>
+            <button disabled={loader} onClick={SubmitHandler}>
               {loader ? <Spin /> : "Log in"}
             </button>
           </div>
@@ -167,3 +112,4 @@ const Login = () => {
 };
 
 export default Login;
+
